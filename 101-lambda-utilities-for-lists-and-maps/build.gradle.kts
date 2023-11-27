@@ -14,6 +14,7 @@ repositories {
 }
 
 dependencies {
+    implementation("com.google.guava:guava:32.1.3-jre")
     // Use JUnit Jupiter API for testing.
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.1")
 

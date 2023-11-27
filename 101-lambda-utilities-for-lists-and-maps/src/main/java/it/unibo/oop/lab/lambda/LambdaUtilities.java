@@ -13,6 +13,8 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import com.google.common.collect.Sets;
+
 /**
  * This class will contain four utility functions on lists and maps, of which the first one is provided as example.
  * 
@@ -58,10 +60,12 @@ public final class LambdaUtilities {
      *         otherwise.
      */
     public static <T> List<Optional<T>> optFilter(final List<T> list, final Predicate<T> pre) {
+        final List<Optional<T>> l = new ArrayList<>();
+        list.forEach(elem -> l.add(Optional.of(elem).filter(pre)));
         /*
          * Suggestion: consider Optional.filter
          */
-        return null;
+        return l;
     }
 
     /**
@@ -77,10 +81,16 @@ public final class LambdaUtilities {
      *         based on the mapping done by the function
      */
     public static <R, T> Map<R, Set<T>> group(final List<T> list, final Function<T, R> op) {
+        final Map<R, Set<T>> map =  new HashMap<>();
+        /*
+         * The method Sets.union() is part of the Google guava library. 
+         * This method returns the Set containing all the elements of the two sets passed as input.
+         */
+        list.forEach(elem -> map.merge(op.apply(elem), Set.of(elem), Sets::union));
         /*
          * Suggestion: consider Map.merge
          */
-        return null;
+        return map;
     }
 
     /**
@@ -101,7 +111,9 @@ public final class LambdaUtilities {
          *
          * Keep in mind that a map can be iterated through its forEach method
          */
-        return null;
+        final Map<K, V> nMap = new HashMap<>();
+        map.forEach((key, value) -> nMap.put(key, value.orElse(def.get())));
+        return nMap;
     }
 
     /**
