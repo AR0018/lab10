@@ -1,8 +1,16 @@
 package it.unibo.mvc;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.util.StringTokenizer;
+
+import it.unibo.mvc.Configuration.Builder;
 
 /**
  */
@@ -58,6 +66,30 @@ public final class DrawNumberApp implements DrawNumberViewObserver {
          * until the last thread terminates.
          */
         System.exit(0);
+    }
+
+    //TODO: fix this method (find a way to create a new model with the read parameters)
+    private Configuration loadConfiguration(String path) throws IOException {
+        try( BufferedReader reader = new BufferedReader(
+            new InputStreamReader(
+                new FileInputStream(path), StandardCharsets.UTF_8))) {
+            StringTokenizer minTokenizer = new StringTokenizer(reader.readLine());
+            minTokenizer.nextToken();
+            final int min = Integer.parseInt(minTokenizer.nextToken());
+            StringTokenizer maxTokenizer = new StringTokenizer(reader.readLine());
+            maxTokenizer.nextToken();
+            final int max = Integer.parseInt(maxTokenizer.nextToken());
+            StringTokenizer attemptsTokenizer = new StringTokenizer(reader.readLine());
+            attemptsTokenizer.nextToken();
+            final int attempts = Integer.parseInt(attemptsTokenizer.nextToken());
+            Builder builder = new Builder();
+            builder = builder.setMin(min).setMax(max).setAttempts(attempts);
+            return builder.build();
+        }catch(final IOException e) {
+            for(final DrawNumberView view : views) {
+                view.displayError(e.getMessage());
+            }
+        }
     }
 
     /**
