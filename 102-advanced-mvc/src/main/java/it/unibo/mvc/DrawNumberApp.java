@@ -15,9 +15,14 @@ import it.unibo.mvc.Configuration.Builder;
 /**
  */
 public final class DrawNumberApp implements DrawNumberViewObserver {
-    private static final int MIN = 0;
-    private static final int MAX = 100;
-    private static final int ATTEMPTS = 10;
+    private static final String PATH_SEPARATOR = System.getProperty("file.separator");
+    private static final String PATH =
+            System.getProperty("user.dir") + PATH_SEPARATOR
+            + "102-advanced-mvc" + PATH_SEPARATOR 
+            + "src" + PATH_SEPARATOR 
+            + "main" + PATH_SEPARATOR 
+            + "resources" + PATH_SEPARATOR 
+            + "config.yml";
 
     private final DrawNumber model;
     private final List<DrawNumberView> views;
@@ -35,7 +40,8 @@ public final class DrawNumberApp implements DrawNumberViewObserver {
             view.setObserver(this);
             view.start();
         }
-        this.model = new DrawNumberImpl(MIN, MAX, ATTEMPTS);
+        Configuration conf = loadConfiguration(PATH);
+        this.model = new DrawNumberImpl(conf.getMin(), conf.getMax(), conf.getAttempts());
     }
 
     @Override
@@ -68,9 +74,12 @@ public final class DrawNumberApp implements DrawNumberViewObserver {
         System.exit(0);
     }
 
-    //TODO: fix this method (find a way to create a new model with the read parameters)
-    private Configuration loadConfiguration(String path) throws IOException {
-        try( BufferedReader reader = new BufferedReader(
+    /*
+     * Loads a configuration from the file. Returns a default Configuration
+     * if there is an error while reading the file.
+     */
+    private Configuration loadConfiguration(final String path) {
+        try (BufferedReader reader = new BufferedReader(
             new InputStreamReader(
                 new FileInputStream(path), StandardCharsets.UTF_8))) {
             StringTokenizer minTokenizer = new StringTokenizer(reader.readLine());
@@ -82,13 +91,12 @@ public final class DrawNumberApp implements DrawNumberViewObserver {
             StringTokenizer attemptsTokenizer = new StringTokenizer(reader.readLine());
             attemptsTokenizer.nextToken();
             final int attempts = Integer.parseInt(attemptsTokenizer.nextToken());
-            Builder builder = new Builder();
-            builder = builder.setMin(min).setMax(max).setAttempts(attempts);
-            return builder.build();
-        }catch(final IOException e) {
-            for(final DrawNumberView view : views) {
+            return new Builder().setMin(min).setMax(max).setAttempts(attempts).build();
+        } catch (final IOException e) {
+            for (final DrawNumberView view : views) {
                 view.displayError(e.getMessage());
             }
+            return new Builder().build();
         }
     }
 
@@ -98,7 +106,11 @@ public final class DrawNumberApp implements DrawNumberViewObserver {
      * @throws FileNotFoundException 
      */
     public static void main(final String... args) throws FileNotFoundException {
-        new DrawNumberApp(new DrawNumberViewImpl());
+        new DrawNumberApp(
+            new DrawNumberViewImpl(),
+            new DrawNumberViewImpl(), 
+            new PrintStreamView(System.out), 
+            new PrintStreamView("output.log"));
     }
 
 }
